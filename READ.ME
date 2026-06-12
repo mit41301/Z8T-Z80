@@ -1,0 +1,108 @@
+
+Notes About the Southern Cross EPROM Emulator
+---------------------------------------------          Documentation V1.3
+                                                       October, 1995
+
+
+The example files are mainly examples to use with the Southern Cross EPROM
+emulator and the Southern Cross single board computer. Some files require
+the 8x8 add-on card as well to run with the Southern Cross. The .HEX &
+.PRN files have all been obtained by running Z8T Public Domain Z80
+assembler also supplied on the disk.
+
+However, the emulator is a stand-alone unit.
+
+Download the .HEX files to the emulator from LPT1: by running 'em
+file.hex'. Use em2.com if you use LPT2:. The '.hex' suffix is not required
+since the file format (binary or Intel hex) is determined in software. If
+you are using the Southern Cross the first file to download is the Monitor
+SCMV1_21.HEX. Then download another file to test. Look into their .PRN files
+to see where to start them. That is, look at their ORG  xx00H statement.
+Then go to that address after they are successfully downloaded and do
+Function 0. The Monitor uses almost half of the 8K emulator space (look at
+the print out SCMV1_21.PRN and see that the last statement is at 0EE8.) That
+gives you just over 4K to run and test your programs. All you have to do is
+change the ORiGin statements and be careful to allocate buffers in RAM for
+temporary storage of variables if they are necessary for the running of the
+program.
+
+When the program is working and you want to put it into RAM just change
+back the ORiGin statements to real RAM locations at 2000H or greater,
+reassemble and download it into RAM using the serial port of the PC.
+
+Once you get a working pattern established for program development then set
+up .bat files for all the routine tasks. Or if you are using Windows 3.1
+and program like Quick C for Windows then you can setup working
+environments within Windows for program development, testing and
+downloading. (This will probably be the way to go in the next few years.)
+
+The following files can be found in the archive:
+
+HELLO    HEX   Run a message across two 8x8 displays. Fully described
+HELLO    PRN       in the Documentation of the 8x8 addon board.
+HELLO    Z8T
+ASSEMBLE.TXT   Text file about how to use Assembler programs
+3_8x8    Z8T   Will run a message across 3 8x8 displays attached to
+3_8x8    TXT       CN1. Text files gives more information.
+3DIGIT   HEX   A 3 digit counter. + to increment, - to decrement.
+3DIGIT   PRN
+3DIGIT   Z8T
+3D_AUTO  HEX   Autostart version of the 3 digit counter.
+3D_AUTO  PRN     Note the three added lines to do the autostart at 2000h.
+3D_AUTO  Z8T
+CLOCK    HEX   24 hour clock in software. After downloading you have to
+CLOCK    PRN      set it. Look into the .prn file to see where to set it.
+CLOCK    Z8T      If you do not initialise it will show garbage.
+SCMV1_21 HEX   Southern Cross Monitor V1.21
+SCMV1_21 Z8T
+SCMV1_21 PRN
+MOVE2    HEX   Two examples from Chapter 4 of the main documentation
+MOVE2    PRN       converted to run on the emulator. Compare the
+MOVE2    Z8T       differences in the code.
+MOVE3    HEX
+MOVE3    PRN
+MOVE3    Z8T
+CRAZYDIS HEX   Another program to turn on the LED displays. Autostarts.
+CRAZYDIS PRN
+CRAZYDIS Z8T
+EM       COM   Program to run on a PC to download an Intel hex or binary
+                   file to the emulator from parallel port 1. It was
+                   written especially for this EPROM emulator.
+EM2      COM   Use this to download using parallel port 2, LPT2:.
+Z8T      COM   Public Domain Z80 DOS Assembler.
+Z8T      DOC   Some documentation supplied with Z8T.
+TASM           Public Domain Cross Assembler
+
+
+
+=========================================================================
+
+
+For more information about this & other products contact:
+
+DIY ELECTRONICS
+PO Box 88458     Voice: 852 - 2720 0255
+Sham Shui Po     Email: peter@kitsrus.com
+Hong Kong        FAX: 852 - 2725 0610.
+
+See our web page:   http://kitsrus.com
+
+
+In north America contact Science First, 95 Botsford Place,
+                         Buffalo, NY 14216-2696
+
+                         Tel:(716) 874-0133
+                         Fax:(716) 874-9853
+                         Email: info@ScienceFirst.com
+
+
+                     or, Marlin P. Jones & Associates Inc.
+                         PO Box 12685, Lake Park FL 33403-0685
+
+                         Tel: 407-848-8236
+                         Fax: 407-844-8764
+
+             - - - - - - - - - - - - - - - - - - - -
+
+
+
