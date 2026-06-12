@@ -1,0 +1,23 @@
+
+        org     1800h
+start:  ld a,01
+        out (82h),a
+        ld a,01
+loop:   out (80h),a
+        ld b,a
+        call delay
+        ld a,b
+        rlc a
+        jp nz,loop
+        jp start
+
+        org  1900h
+
+delay:      ld de,055ffh
+loop2:      dec de
+            ld a,e
+            or d
+            jp nz,loop2
+            ret
+            end
+

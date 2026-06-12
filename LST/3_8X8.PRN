@@ -1,0 +1,260 @@
+
+
+               Z8T Cross Assembler Version 1.0              
+
+Source File Name: 3_8X8.Z8T                                           Page  1
+
+
+ 0000                          ORG 0         ;automatic go
+ 0000 00                       NOP
+ 0001 310040                   ld sp,4000h
+ 0004 C30018                   JP main      ;section
+                
+ 0008           speed          equ 8        ;time delay before shift
+                
+ 1800                          org 1800h
+                
+ 1800 110E20    main:          ld de,dis_buff      ;DE is pointer into dis_buff
+ 1803 21001B                   ld hl,ASCII_tab     ;HL points to chars to display
+ 1806 220C20                   ld (code_buff),hl   ;save pointer
+ 1809 2A0C20    loop:          ld hl,(code_buff)   ;looping here: get pointer
+ 180C 7E                       ld a,(hl)           ;put character code in A
+ 180D 23                       inc hl              ;up pointer to next char
+ 180E 220C20                   ld (code_buff),hl   ;save pointer
+ 1811 FEFF                     cp 0ffh             ;done all characters?
+ 1813 281B                     jr z,scaninit       ;jump if ffh as all converted
+ 1815 6F                       ld l,a              ;put char code into HL
+ 1816 2600                     ld h,0              ;zero H
+ 1818 E5                       push hl             ;put char code into BC also
+ 1819 C1                       pop bc              ;by using the stack
+ 181A B7                       or a                ;this clears carry flag
+ 181B ED6A                     adc hl,hl           ;double char code
+ 181D ED6A                     adc hl,hl           ;double char code again (x4)
+ 181F ED4A                     adc hl,bc           ;add orginal char code (x5)
+ 1821 016018                   ld bc,char_tab-(20h*5)  ;load BC with base of char
+ 1824 ED4A                     adc hl,bc           ;table; add offset
+ 1826 010500                   ld bc,5             ;now setup to tranfer 5 bytes
+ 1829 EDB0                     ldir                ;from (HL) to (DE); do tranfer
+ 182B AF                       xor a               ;clear A
+ 182C 12                       ld (de),a           ;add space to end of char
+ 182D 13                       inc de              ;next display buffer location
+ 182E 18D9                     jr loop             ;do rest of characters
+ 1830 3EFF      scaninit:      ld a,0ffh           ;mark end of display buffer
+ 1832 12                       ld (de),a           ;pointer to by DE
+ 1833 210E20    scan_in2:      ld hl,dis_buff      ;point HL to start of dis_buff
+ 1836 220020                   ld (ptr1),hl        ;save start
+ 1839 B7                       or a                ;clear carry
+ 183A 110800                   ld de,08            ;now get start for second 8x8
+ 183D ED5A                     adc hl,de           ;8 bytes from first
+ 183F 220220                   ld (ptr2),hl        ;save second start
+ 1842 B7                       or a                ;clear carry
+ 1843 ED5A                     adc hl,de           ;3rd 8 bytes from second
+ 1845 220420                   ld (ptr3),hl        ;save second start
+ 1848 0608      scan_dly:      ld b,speed          ;static scan time
+ 184A C5        scan_lp1:      push bc             ;save scan time
+ 184B 2A0020                   ld hl,(ptr1)        ;move pointer to
+ 184E 220620                   ld (aptr1),hl       ;working pointer buffer
+ 1851 2A0220                   ld hl,(ptr2)        ;second pointer
+ 1854 220820                   ld (aptr2),hl       ;also
+
+
+               Z8T Cross Assembler Version 1.0              
+
+Source File Name: 3_8X8.Z8T                                           Page  2
+
+
+ 1857 2A0420                   ld hl,(ptr3)        ;
+ 185A 220A20                   ld (aptr3),hl       ;
+ 185D 0680                     ld b,80h            ;load B with rotating scan bit
+ 185F 2A0620    scan_lp2:      ld hl,(aptr1)       ;get first pointer
+ 1862 7E                       ld a,(hl)           ;put display code into A
+ 1863 23                       inc hl              ;up pointer
+ 1864 FEFF                     cp 0ffh             ;is this end code?
+ 1866 2005                     jr nz,notend1       ;jump away if not else reset
+ 1868 210E20                   ld hl,dis_buff      ;working pointer to start buff
+ 186B 7E                       ld a,(hl)           ;get display code
+ 186C 23                       inc hl              ;up pointer
+ 186D 220620    notend1:       ld (aptr1),hl       ;save new working pointer
+ 1870 D381                     out (81h),a         ;output first code to segments
+ 1872 2A0820                   ld hl,(aptr2)       ;now do all again for 2nd code
+ 1875 7E                       ld a,(hl)           ;put display code into A
+ 1876 23                       inc hl              ;next
+ 1877 FEFF                     cp 0ffh             ;end?
+ 1879 2005                     jr nz,notend2       ;jump no
+ 187B 210E20                   ld hl,dis_buff      ;else
+ 187E 7E                       ld a,(hl)           ;get first display code
+ 187F 23                       inc hl              ;up poiner to second
+ 1880 220820    notend2:       ld (aptr2),hl       ;save new pointer
+ 1883 D382                     out (82h),a         ;output second display byte
+ 1885 2A0A20                   ld hl,(aptr3)       ;now do all again for 3rd code
+ 1888 7E                       ld a,(hl)           ;put display code into A
+ 1889 23                       inc hl              ;next
+ 188A FEFF                     cp 0ffh             ;end?
+ 188C 2005                     jr nz,notend3       ;jump no
+ 188E 210E20                   ld hl,dis_buff      ;else
+ 1891 7E                       ld a,(hl)           ;get first display code
+ 1892 23                       inc hl              ;up poiner to second
+ 1893 220A20    notend3:       ld (aptr3),hl       ;save new pointer
+ 1896 D383                     out (83h),a         ;output second display byte
+ 1898 78                       ld a,b              ;get scan bit in A
+ 1899 D380                     out (80h),a         ;output it to first commons
+ 189B 0600                     ld b,0              ;load B with display on time
+ 189D 10FE                     djnz $              ;loop here until delay finished
+ 189F 47                       ld b,a              ;return scan bit into B
+ 18A0 AF                       xor a               ;trick to zero A
+ 18A1 D380                     out (80h),a      ;clear commons to prevent ghosts
+ 18A3 CB08                     rrc b            ;shift scan bit once to the right
+ 18A5 D25F18                   jp nc,scan_lp2   ;jump if no into carry flag
+ 18A8 C1                       pop bc              ;else all 8 scanned
+ 18A9 109F                     djnz scan_lp1       ;rescan until scan timer = 0
+ 18AB 2A0020                   ld hl,(ptr1)        ;now up first pointer to
+ 18AE 23                       inc hl              ;shift display along
+ 18AF 7E                       ld a,(hl)           ;test for end
+ 18B0 FEFF                     cp 0ffh             ;of display buffer
+ 18B2 2003                     jr nz,ptr1_ok       ;jump if not end
+ 18B4 210E20                   ld hl,dis_buff      ;else point to start
+ 18B7 220020    ptr1_ok:       ld (ptr1),hl        ;save new pointer
+
+
+               Z8T Cross Assembler Version 1.0              
+
+Source File Name: 3_8X8.Z8T                                           Page  3
+
+
+ 18BA 2A0220                   ld hl,(ptr2)        ;now up second pointer to
+ 18BD 23                       inc hl              ;shift display along
+ 18BE 7E                       ld a,(hl)           ;test for end
+ 18BF FEFF                     cp 0ffh             ;of display buffer
+ 18C1 2003                     jr nz,ptr2_ok       ;jump if not end
+ 18C3 210E20                   ld hl,dis_buff      ;else point to start
+ 18C6 220220    ptr2_ok:       ld (ptr2),hl        ;save new pointer
+ 18C9 2A0420                   ld hl,(ptr3)        ;now up second pointer to
+ 18CC 23                       inc hl              ;shift display along
+ 18CD 7E                       ld a,(hl)           ;test for end
+ 18CE FEFF                     cp 0ffh             ;of display buffer
+ 18D0 2003                     jr nz,ptr3_ok       ;jump if not end
+ 18D2 210E20                   ld hl,dis_buff      ;else point to start
+ 18D5 220420    ptr3_ok:       ld (ptr3),hl        ;save new pointer
+ 18D8 C34818                   jp scan_dly         ;jump if not else return
+                
+ 1900                          org 1900h
+ 1900                                                   ;char  ;ASCII code
+ 1900 00000000  char_tab       db 0,0,0,0,0              ;space  20h
+ 1905 00007B00                 db 0,0,7bh,0,0            ;!      21h
+ 190A 00700070                 db 0,70h,0,70h,0          ;"      22h
+ 190F 147F147F                 db 14h,7fh,14h,7fh,14h    ;#      23h
+ 1914 124A7F4A                 db 12h,4ah,7fh,4ah,24h    ;$      24h
+ 1919 62640813                 db 62h,64h,8,13h,23h      ;%      25h
+ 191E 36495522                 db 36h,49h,55h,22h,5      ;&      26h
+ 1923 00506000                 db 0,50h,60h,0,0          ;'      27h
+ 1928 001C2241                 db 0,1ch,22h,41h,0        ;(      28h
+ 192D 0041221C                 db 0,41h,22h,1ch,0        ;)      29h
+ 1932 14083E08                 db 14h,8,3eh,8,14h        ;*      2ah
+ 1937 08083E08                 db 8,8,3eh,8,8            ;+      2bh
+ 193C 00050600                 db 0,5,6,0,0              ;,      2ch
+ 1941 08080808                 db 8,8,8,8,8              ;-      2dh
+ 1946 00030300                 db 0,3,3,0,0              ;.      2eh
+ 194B 02040810                 db 2,4,8,10h,20h          ;/      2fh
+ 1950 3E454951                 db 3eh,45h,49h,51h,3eh    ;0      30h
+ 1955 00217F01                 db 0,21h,7fh,1,0          ;1      31h
+ 195A 21434549                 db 21h,43h,45h,49h,31h    ;2      32h
+ 195F 42415169                 db 42h,41h,51h,69h,46h    ;3      33h
+ 1964 0C14247F                 db 0ch,14h,24h,7fh,4      ;4      34h
+ 1969 72515151                 db 72h,51h,51h,51h,4eh    :5      35h
+ 196E 1E294949                 db 1eh,29h,49h,49h,6      :6      36h
+ 1973 40404F50                 db 40h,40h,4fh,50h,60h    :7      37h
+ 1978 36494949                 db 36h,49h,49h,49h,36h    ;8      38h
+ 197D 3049494A                 db 30h,49h,49h,4ah,3ch    ;9      39h
+ 1982 00363600                 db 0,36h,36h,0,0          ;:      3ah
+ 1987 00353600                 db 0,35h,36h,0,0          ;;      3bh
+ 198C 08142241                 db 8,14h,22h,41h,0        ;<      3ch
+ 1991 14141414                 db 14h,14h,14h,14h,14h    ;=      3dh
+ 1996 00412214                 db 0,41h,22h,14h,8        ;>      3eh
+ 199B 20404548                 db 20h,40h,45h,48h,30h    ;?      3fh
+ 19A0 3E415D45                 db 3eh,41h,5dh,45h,3ah    ;@      40h
+
+
+               Z8T Cross Assembler Version 1.0              
+
+Source File Name: 3_8X8.Z8T                                           Page  4
+
+
+ 19A5 3F444444                 db 3fh,44h,44h,44h,3fh    ;A      41h
+ 19AA 7F494949                 db 7fh,49h,49h,49h,36h    ;B      42h
+ 19AF 3E414141                 db 3eh,41h,41h,41h,22h    ;C      43h
+ 19B4 7F414141                 db 7fh,41h,41h,41h,3eh    ;D      44h
+ 19B9 7F494949                 db 7fh,49h,49h,49h,41h    ;E      45h
+ 19BE 7F484848                 db 7fh,48h,48h,48h,40h    ;E      46h
+ 19C3 3E414949                 db 3eh,41h,49h,49h,2eh    ;G      47h
+ 19C8 7F080808                 db 7fh,8,8,8,7fh          ;H      48h
+ 19CD 00417F41                 db 0,41h,7fh,41h,0        ;I      49h
+ 19D2 0201417E                 db 2,1,41h,7eh,40h        ;J      4ah
+ 19D7 7F081422                 db 7fh,8,14h,22h,41h      ;k      4bh
+ 19DC 7F010101                 db 7fh,01,01,01,01h       ;L      4ch
+ 19E1 7F201820                 db 7fh,20h,18h,20h,7fh    ;M      4dh
+ 19E6 7F100804                 db 7fh,10h,8,4,7fh        ;N      4eh
+ 19EB 3E414141                 db 3eh,41h,41h,41h,3eh    ;O      4fh
+ 19F0 7F484848                 db 7fh,48h,48h,48h,30h    ;P      50h
+ 19F5 3E414542                 db 3eh,41h,45h,42h,3dh    ;Q      51h
+ 19FA 7F484C4A                 db 7fh,48h,4ch,4ah,31h    ;R      52h
+ 19FF 31494949                 db 31h,49h,49h,49h,46h    ;S      53h
+ 1A04 40407F40                 db 40h,40h,7fh,40h,40h    ;T      54h
+ 1A09 7E010101                 db 7eh,1,1,1,7eh          ;U      55h
+ 1A0E 7C020102                 db 7ch,2,1,2,7ch          ;V      56h
+ 1A13 7E010E01                 db 7eh,1,0eh,1,7eh        ;W      57h
+ 1A18 63140814                 db 63h,14h,8,14h,63h      ;X      58h
+ 1A1D 70080708                 db 70h,08,7,8,70h         ;Y      59h
+ 1A22 43454951                 db 43h,45h,49h,51h,61h    ;Z      5ah
+ 1A27 007F4141                 db 0,7fh,41h,41h,0        ;[      5bh
+ 1A2C 10080402                 db 10h,8,4,2,1            ;\      5ch
+ 1A31 0041417F                 db 0,41h,41h,7fh,0        ;]      5dh
+ 1A36 10204020                 db 10h,20h,40h,20h,10h    ;^      5eh
+ 1A3B 01010101                 db 1,1,1,1,1              ;_      5fh
+ 1A40 00706800                 db 0,70h,68h,0,0          ;`      60h
+                
+ 1A45                          ORG 1A45H
+ 1A45 02151515                 db 2,15h,15h,15h,0fh      ;a      61h
+                
+ 1B00                          org 1b00h
+                
+ 1B00 534F5554  ASCII_tab       db "SOUTHERN CROSS Z80 COMPUTER DESIGNED BY DIY"
+ 1B2B 20454C45                  DB " ELECTRONICS, HONG KONG ",0ffh
+                
+ 2000                          org 2000h
+                
+ 2000           ptr1           equ $
+ 2002           ptr2           equ ptr1+2
+ 2004           ptr3           equ ptr2+2
+ 2006           aptr1          equ ptr3+2
+ 2008           aptr2          equ aptr1+2
+ 200A           aptr3          equ aptr2+2
+ 200C           code_buff      equ aptr3+2
+ 200E           dis_buff       equ code_buff+2
+
+
+               Z8T Cross Assembler Version 1.0              
+
+Source File Name: 3_8X8.Z8T                                           Page  5
+
+
+                
+ 0000                          end
+
+
+               Z8T Cross Assembler Version 1.0              
+
+Source File Name: 3_8X8.Z8T                                           Page  6
+---- Symbol Table ----
+
+APTR1    2006          MAIN     1800          PTR3     2004
+APTR2    2008          NOTEND1  186D          PTR3_OK  18D5
+APTR3    200A          NOTEND2  1880          SCANINIT 1830
+ASCII_TA 1B00          NOTEND3  1893          SCAN_DLY 1848
+CHAR_TAB 1900          PTR1     2000          SCAN_IN2 1833
+CODE_BUF 200C          PTR1_OK  18B7          SCAN_LP1 184A
+DIS_BUFF 200E          PTR2     2002          SCAN_LP2 185F
+LOOP     1809          PTR2_OK  18C6          SPEED    0008
+                
+***** No Errors Detected *****
+qu aptr2+2
+ 200C  

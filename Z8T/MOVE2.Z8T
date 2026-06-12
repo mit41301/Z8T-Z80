@@ -1,0 +1,51 @@
+            org 1950h
+
+ ;This program outputs a shape to the displays The keyboard can be used
+ ;to move the shape across the displays. The shape is kept inside the
+ ;displays at all times by the extra instructions added from move1.
+ ;The "C" key moves the shape to the left while the "F" key moves it right
+
+            ld a,40              ; "your shape" any value 1-FF
+            out (84h),a                  ;output to segments
+            ld a,04                      ;this value turns on
+            out (85h),a                  ;middle display
+            ld (buffer),a                ;save rolling bit
+
+mainlp:     in a,(86h)                   ;get key status
+            bit 5,a                      ;test it
+            jr z,mainlp                  ;jump if no key
+            and 1fh                      ;clean off unsed bits
+            cp 0ch                       ;is it "C"
+            jr nz,notleft                ;jump if not "C"
+            ld a,(buffer)                ;get our rolling bit
+            rlc  a                       ;shift it left
+            cp 40h                       ;is it outside left
+            jr nz,not40                  ;jump if not
+            rlc a                        ;else move it to right
+            rlc a                        ;display
+not40:      ld (buffer),a                ;save rolling bit
+            jr out_new                   ;jump to output it
+
+notleft:    cp 0fh                       ;test for "F" key
+            jr nz,mainlp                 ;jump to loop if not
+            ld a,(buffer)                ;else get rolling bit
+            rrc a                        ;move it to the right
+            cp a,80h                     ;test for right fall out
+            jr nz,not80                  ;jump if not
+            rrc a                        ;else move bit to
+            rrc a                        ;left display position
+not80:      ld (buffer),a                ;save it
+out_new:    ld a,(buffer)                ;get new rolling bit
+            out (85h),a                  ;output it to commons
+
+release:    in a,(86h)                   ;wait for key release
+            bit 5,a                      ;test key status
+            jr nz,release                ;jump if key still down
+            jr mainlp                    ;else jump to main loop
+
+            org 2000h
+
+buffer      db 0
+
+            end
+

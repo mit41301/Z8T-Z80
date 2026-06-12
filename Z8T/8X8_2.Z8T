@@ -1,0 +1,29 @@
+delay equ   1900h
+            org 1800h
+
+            ld a,01
+            ld h,01
+return:     ld a,h
+            out (80h),a
+            ld c,08
+            ld a,01
+loop:       out (82h),a
+            ld b,a
+            call delay
+            ld a,b
+            rlc a
+            dec c
+            jp nz,loop
+            inc h
+            jp return
+
+            org 1900h
+
+            ld de,033ffh
+loop2:      dec de
+            ld a,e
+            or d
+            jp nz,loop2
+            ret
+            end
+

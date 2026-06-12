@@ -1,0 +1,98 @@
+
+
+               Z8T Cross Assembler Version 1.0              
+
+Source File Name: CRAZYDIS.Z8T                                        Page  1
+
+
+ 0000                     org 0                 ;this works on my SC no problems!
+ 0000 31FF3F              ld sp,3fffh
+ 0003 C30018              jp 1800h
+                
+                
+                ;we must discuss putting programs here at 1800h It is wasteful
+                ;I never intended for any of mine to run here, I only put them her
+                e for
+                ;quick use with the emulator
+                ;these programs are better used with the serial link and loaded in
+                to RAM
+                
+                ;this program is designed for the 7 seg displays, you had it outpu
+                tting
+                ;to the 8x8
+                
+ 1800                     org 1800h
+                
+ 1800 215018    start:    ld hl,table
+ 1803 7E        loop1:    ld a,(hl)
+ 1804 D385                out (85h),a    ;note change in port address
+ 1806 23                  inc hl
+ 1807 7E                  ld a,(hl)
+ 1808 D384                out (84h),a    ;here too
+ 180A 23                  inc hl
+ 180B CD0019              call delay
+                
+ 180E                     ;new improved table end checker (the old one will not wo
+                rk!)
+                
+ 180E 016618              ld bc,tab_end
+ 1811 B7                  or a       ;clear carry flag
+ 1812 E5                  push hl    ;save pointer
+ 1813 ED42                sbc hl,bc  ;is pointer = to tab_end?
+ 1815 E1                  pop hl     ;recover pointer
+ 1816 20EB                jr nz,loop1  ;jump if pointer not equal to tab_end
+ 1818 C30018              jp start     ;redo all
+                
+ 1850                     org 1850h
+                
+                ;your old wrong table (ok for TEC only)
+                
+                ;table     db    01,09,02,03,04,06,08,0ch,10h
+                ;          db    20h,03,20h,0c0h,10h,0a0h,08,24h,44h
+                ;note the 0's added to c0h and a0h and h after any > 9 numbers
+                
+                ;tab_end   equ $
+                
+                ;new extended SC version table
+                
+ 1850 01030221  table     db    1,3,2,21h,4,60h,8,42h,10h,3
+
+
+               Z8T Cross Assembler Version 1.0              
+
+Source File Name: CRAZYDIS.Z8T                                        Page  2
+
+
+ 185A 20212018            db    20h,21h,20h,18h,10h,0ch,8,44h
+ 1862 0450020C            db    4,50h,2,0ch
+ 1866           tab_end   equ $        :$ = this assembly time address
+                
+                ;therefor tab_end = address after last table entry when assembled
+                
+                ;4 = 04 = 04h = 4h = 000004 = 00004h etc for all numbers 0 - 9
+                ;take your pick!
+                
+                
+ 1900                       org 1900h
+                
+ 1900 110040    delay:      ld de,04000h   ;crystal speed
+ 1903 1B        loop2:      dec de
+ 1904 7B                    ld a,e
+ 1905 B2                    or d
+ 1906 C20319                jp nz,loop2
+ 1909 C9                    ret
+                
+ 0000                       end
+
+
+               Z8T Cross Assembler Version 1.0              
+
+Source File Name: CRAZYDIS.Z8T                                        Page  3
+---- Symbol Table ----
+
+DELAY    1900          LOOP2    1903          TABLE    1850
+LOOP1    1803          START    1800          TAB_END  1866
+                
+***** No Errors Detected *****
+    tab_end   equ $        :$ = this assembly time address
+    

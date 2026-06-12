@@ -1,0 +1,32 @@
+               org 1800h
+
+start:        ld a,01
+loop3:        out (80h),a
+              out (82h),a
+              rla
+              push af
+              call delay
+              pop af
+              inc a
+              jp nz,loop3
+              ld a,002h  ;change to get different effects
+loop4:        out (80h),a
+              out (82h),a
+              rla
+              push af
+              call delay
+              pop af
+              dec a
+              jp nz,loop4
+              jp loop3
+
+            org 1900h
+
+delay:      ld de,088ffh
+loop2:      dec de
+            ld a,e
+            or d
+            jp nz,loop2
+            ret
+            end
+

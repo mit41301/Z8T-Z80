@@ -1,0 +1,53 @@
+
+
+               Z8T Cross Assembler Version 1.0              
+
+Source File Name: 8X8_3.Z8T                                           Page  1
+
+
+ 1800                          org 1800h
+                
+ 1800 3E01      start:        ld a,01
+ 1802 D380      loop3:        out (80h),a
+ 1804 D382                    out (82h),a
+ 1806 17                      rla
+ 1807 F5                      push af
+ 1808 CD0019                  call delay
+ 180B F1                      pop af
+ 180C 3C                      inc a
+ 180D C20218                  jp nz,loop3
+ 1810 3E02                    ld a,002h  ;change to get different effects
+ 1812 D380      loop4:        out (80h),a
+ 1814 D382                    out (82h),a
+ 1816 17                      rla
+ 1817 F5                      push af
+ 1818 CD0019                  call delay
+ 181B F1                      pop af
+ 181C 3D                      dec a
+ 181D C21218                  jp nz,loop4
+ 1820 C30218                  jp loop3
+                
+ 1900                       org 1900h
+                
+ 1900 11FF88    delay:      ld de,088ffh
+ 1903 1B        loop2:      dec de
+ 1904 7B                    ld a,e
+ 1905 B2                    or d
+ 1906 C20319                jp nz,loop2
+ 1909 C9                    ret
+ 0000                       end
+
+
+               Z8T Cross Assembler Version 1.0              
+
+Source File Name: 8X8_3.Z8T                                           Page  2
+---- Symbol Table ----
+
+DELAY    1900          LOOP3    1802          START    1800
+LOOP2    1903          LOOP4    1812          
+                
+***** No Errors Detected *****
+1812 D380      loop4:        out (80h),a
+ 1814 D382                    out (82h),a
+ 1816 17                      rla
+ 
